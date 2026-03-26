@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		8F5C1F9A2D6A4E9D9F4B1A21 /* lara/kexploit/darksword.m in Sources */ = {isa = PBXBuildFile; fileRef = 8F5C1F9B2D6A4E9D9F4B1A21 /* lara/kexploit/darksword.m */; };
-		9F4A1D2B3C4E567890123456 /* lara/kexploit/kernelcache_offsets.m in Sources */ = {isa = PBXBuildFile; fileRef = 9F4A1D2C3C4E567890123456 /* lara/kexploit/kernelcache_offsets.m */; };
 		9F4A1D2D3C4E567890123456 /* lara/lib/libxpf.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F4A1D2E3C4E567890123456 /* lara/lib/libxpf.dylib */; };
 		9F4A1D2F3C4E567890123456 /* lara/lib/libxpf.dylib in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 9F4A1D2E3C4E567890123456 /* lara/lib/libxpf.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9F4A1D403C4E567890123456 /* lara/lib/libgrabkernel2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F4A1D413C4E567890123456 /* lara/lib/libgrabkernel2.dylib */; };
@@ -32,7 +31,6 @@
 
 /* Begin PBXFileReference section */
 		8F5C1F9B2D6A4E9D9F4B1A21 /* lara/kexploit/darksword.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = lara/kexploit/darksword.m; sourceTree = "<group>"; };
-		9F4A1D2C3C4E567890123456 /* lara/kexploit/kernelcache_offsets.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = lara/kexploit/kernelcache_offsets.m; sourceTree = "<group>"; };
 		9F4A1D2E3C4E567890123456 /* lara/lib/libxpf.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = lara/lib/libxpf.dylib; sourceTree = "<group>"; };
 		9F4A1D303C4E567890123456 /* lara/xpf.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = lara/xpf.h; sourceTree = "<group>"; };
 		9F4A1D413C4E567890123456 /* lara/lib/libgrabkernel2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = lara/lib/libgrabkernel2.dylib; sourceTree = "<group>"; };
@@ -82,7 +80,6 @@
 			isa = PBXGroup;
 			children = (
 				8F5C1F9B2D6A4E9D9F4B1A21 /* lara/kexploit/darksword.m */,
-				9F4A1D2C3C4E567890123456 /* lara/kexploit/kernelcache_offsets.m */,
 				9F4A1D2E3C4E567890123456 /* lara/lib/libxpf.dylib */,
 				9F4A1D303C4E567890123456 /* lara/xpf.h */,
 				9F4A1D413C4E567890123456 /* lara/lib/libgrabkernel2.dylib */,
@@ -167,7 +164,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8F5C1F9A2D6A4E9D9F4B1A21 /* lara/kexploit/darksword.m in Sources */,
-				9F4A1D2B3C4E567890123456 /* lara/kexploit/kernelcache_offsets.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

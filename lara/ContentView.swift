@@ -12,19 +12,20 @@ struct ContentView: View {
     @ObservedObject private var mgr = laramgr.shared
     @State private var uid: uid_t = getuid()
     @State private var pid: pid_t = getpid()
-    @State private var hasKernelcacheOffsets = lara_has_kernproc_offset()
-    @State private var showResetAlert = false
+    @State private var hasoffsets = haskernproc()
+    @State private var showresetalert = false
+    @State private var showfontsheet = false
     
     var body: some View {
         NavigationStack {
             List {
-                if !hasKernelcacheOffsets {
+                if !hasoffsets {
                     Section("Kernelcache") {
                         Button("Download Kernelcache") {
                             DispatchQueue.global(qos: .userInitiated).async {
-                                let ok = lara_download_kernelcache_and_set_offsets()
+                                let ok = dlkerncache()
                                 DispatchQueue.main.async {
-                                    hasKernelcacheOffsets = ok
+                                    hasoffsets = ok
                                 }
                             }
                         }
@@ -35,6 +36,7 @@ struct ContentView: View {
                             mgr.run()
                         }
                         .disabled(mgr.dsrunning)
+                        .disabled(mgr.dsready)
                         
                         HStack {
                             Text("krw ready?")
@@ -43,64 +45,66 @@ struct ContentView: View {
                                 .foregroundColor(mgr.dsready ? .green : .red)
                         }
                         
-                        if hasKernelcacheOffsets {
+                        HStack {
+                            Text("kernproc:")
+                            Spacer()
+                            Text(String(format: "0x%llx", getkernproc()))
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        if mgr.dsready {
                             HStack {
-                                Text("kernproc:")
+                                Text("kernel_base:")
                                 Spacer()
-                                Text(String(format: "0x%llx", lara_get_kernproc_offset()))
+                                Text(String(format: "0x%llx", mgr.kernbase))
+                                    .font(.system(.body, design: .monospaced))
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            HStack {
+                                Text("kernel_slide:")
+                                Spacer()
+                                Text(String(format: "0x%llx", mgr.kernslide))
                                     .font(.system(.body, design: .monospaced))
                                     .foregroundColor(.secondary)
                             }
                         }
-                        
-                        HStack {
-                            Text("kernel_base:")
-                            Spacer()
-                            Text(String(format: "0x%llx", mgr.kernbase))
-                                .font(.system(.body, design: .monospaced))
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        HStack {
-                            Text("kernel_slide:")
-                            Spacer()
-                            Text(String(format: "0x%llx", mgr.kernslide))
-                                .font(.system(.body, design: .monospaced))
-                                .foregroundColor(.secondary)
-                        }
                     }
-                    
-                    Section("Kernel File System") {
+
+                    Section("Kernel File System (broken)") {
                         Button("Initialize KFS") {
                             mgr.kfsinit()
                         }
                         .disabled(!mgr.dsready)
                         
-                        Button("Apply Comic Sans MS") {
-                            let success = mgr.kfsoverwrite(target: laramgr.fontpath, withBundledFont: "Comic Sans MS")
+                        Button("Font Overwrite") {
+                            showfontsheet = true
+                        }
+                        .disabled(!mgr.kfsready)
+                        .confirmationDialog("Set System Font", isPresented: $showfontsheet, titleVisibility: .visible) {
+                            Button("Comic Sans MS") {
+                                let success = mgr.kfsoverwrite(target: laramgr.fontpath, withBundledFont: "Comic Sans MS")
+                                
+                                if success {
+                                    mgr.logmsg("font changed to Comic Sans MS")
+                                } else {
+                                    mgr.logmsg("failed to change font")
+                                }
+                            }
                             
-                            if success {
-                                mgr.logmsg("Font changed to Comic Sans MS")
-                            } else {
-                                mgr.logmsg("Failed to change font")
+                            Button("SFUI (Normal Font)") {
+                                let success = mgr.kfsoverwrite(target: laramgr.fontpath, withBundledFont: "SFUI")
+                                
+                                if success {
+                                    mgr.logmsg("font changed to SFUI")
+                                } else {
+                                    mgr.logmsg("failed to change font")
+                                }
                             }
+                            
+                            Button("Cancel", role: .cancel) { }
                         }
-                        .disabled(!mgr.kfsready)
-                        
-                        Button("Restore Original Font") {
-                            let success = mgr.kfsoverwrite(target: laramgr.fontpath, withBundledFont: "SFUI")
-                            if success {
-                                mgr.logmsg("Font restored to original SFUI")
-                            } else {
-                                mgr.logmsg("Failed to restore font")
-                            }
-                        }
-                        .disabled(!mgr.kfsready)
-                        
-                        Button("Respring") {
-                            notify_post("com.apple.springboard.toggleLockScreen")
-                        }
-                        .disabled(!mgr.kfsready)
                         
                         HStack {
                             Text("UID:")
@@ -138,12 +142,11 @@ struct ContentView: View {
                     }
                     
                     Section {
-                        Button("respring") {
+                        Button("Respring") {
                             notify_post("com.apple.springboard.toggleLockScreen")
                         }
-                        .disabled(!mgr.dsready)
                         
-                        Button("panic!") {
+                        Button("Panic!") {
                             mgr.panic()
                         }
                         .disabled(!mgr.dsready)
@@ -218,7 +221,7 @@ struct ContentView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
-                        showResetAlert = true
+                        showresetalert = true
                     } label: {
                         Image(systemName: "trash")
                             .foregroundColor(.red)
@@ -226,21 +229,11 @@ struct ContentView: View {
                 }
             }
         }
-        .onAppear {
-            if !hasKernelcacheOffsets {
-                DispatchQueue.global(qos: .userInitiated).async {
-                    let ok = lara_download_kernelcache_and_set_offsets()
-                    DispatchQueue.main.async {
-                        hasKernelcacheOffsets = ok
-                    }
-                }
-            }
-        }
-        .alert("Clear Kernelcache Data?", isPresented: $showResetAlert) {
+        .alert("Clear Kernelcache Data?", isPresented: $showresetalert) {
             Button("Cancel", role: .cancel) {}
             Button("Delete", role: .destructive) {
-                lara_clear_kernelcache_data()
-                hasKernelcacheOffsets = lara_has_kernproc_offset()
+                clearkerncachedata()
+                hasoffsets = haskernproc()
             }
         } message: {
             Text("This will delete the downloaded kernelcache and remove saved offsets.")

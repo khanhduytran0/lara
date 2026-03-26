@@ -159,8 +159,10 @@ struct LogsView: View {
                         Image(systemName: "doc.on.doc")
                     }
                     
-                    Button("Clear") {
+                    Button {
                         globallogger.clear()
+                    } label: {
+                        Image(systemName: "trash")
                     }
                     .foregroundColor(.red)
                 }
