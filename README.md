@@ -16,7 +16,7 @@ If lara doesnt work on your device, and you want to help the project, please als
 - DirtyZero 2 (Broken)
 
 ### coming soon:
-- MobileGestalt Editor
+- MobileGestalt Editor?
 - File Manager (Full Disk r/w)
 
 ## known issues:
