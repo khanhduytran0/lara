@@ -16,7 +16,7 @@ If lara doesnt work on your device, and you want to help the project, please als
 ### implemented:
 - Font Overwrite
 - 3 App Bypass
-- File Manager (Full Disk r/w)
+- File Manager (Full Disk r/w etas0n?)
 - DirtyZero 2 (Broken)
 
 ### coming soon:
