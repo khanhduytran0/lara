@@ -37,18 +37,15 @@
 		CC6842DF2F8311C300B08EB0 /* libSystem.B.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libSystem.B.tbd; path = usr/lib/libSystem.B.tbd; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+	/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		CC70C4A12F78D4C10052726B /* Exceptions for "lara" folder in "lara" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				other/media.xcassets,
 			);
 			target = CC1C8B382F71DF9C00206982 /* lara */;
 		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
+	/* End PBXFileSystemSynchronizedBuildFileExceptionSet section *//* Begin PBXFileSystemSynchronizedRootGroup section */
 		CC1C8B3B2F71DF9C00206982 /* lara */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
