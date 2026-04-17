@@ -11,4 +11,4 @@ contact_links:
     about: Search open and closed issues before submitting — your problem may already be reported or fixed.
   - name: Source & Releases
     url: https://github.com/rooootdev/lara/releases
-    about: Make sure youre on the latest release before reporting a bug.
+    about: Make sure you're on the latest release before reporting a bug.
