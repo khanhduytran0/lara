@@ -140,7 +140,7 @@ struct ToolsView: View {
             } header: {
                 Text("JIT")
             } footer: {
-                Text("Enables JIT for an app via RemoteCall (SpringBoard). Requires Kernel R/W.")
+                Text("Currently broken.")
             }
             
             Section {
