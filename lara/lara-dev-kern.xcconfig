@@ -1,0 +1,11 @@
+//
+//  lara-dev-kern.xcconfig
+//  lara
+//
+//  Created by Duy Tran on 18/5/26.
+//
+
+AD_HOC_CODE_SIGNING_ALLOWED = YES
+CODE_SIGN_ENTITLEMENTS = lara/lara-proto-sb1.entitlements
+CODE_SIGN_IDENTITY = -
+GCC_PREPROCESSOR_DEFINITIONS = TARGET_OS_DEV_KERNEL=1

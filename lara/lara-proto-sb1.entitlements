@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>application-identifier</key>
+	<string>com.roooot.laraapp</string>
+	<key>com.apple.private.security.container-required</key>
+	<string>com.roooot.laraapp</string>
+	<key>com.apple.pac.shared_region_id</key>
+	<string>lara</string>
+    <key>jb.pmap_cs.custom_trust</key>
+    <string>PMAP_CS_APP_STORE</string>
+</dict>
+</plist>
