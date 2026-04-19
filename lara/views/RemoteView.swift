@@ -68,6 +68,16 @@ struct RemoteView: View {
                     Text("Apply Dock Columns")
                 }
                 .disabled(!mgr.remotecallrunning || isRunning)
+
+                Button {
+                    run("Enable Upside Down") {
+                        let result = enable_upside_down(mgr.sbProc)
+                        return "enable_upside_down() -> \(result)"
+                    }
+                } label: {
+                    Text("Enable Upside Down")
+                }
+                .disabled(!mgr.remotecallrunning || isRunning)
             } header: {
                 Text("SpringBoard")
             } footer: {
