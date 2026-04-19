@@ -18,6 +18,12 @@ struct ContentView: View {
     var body: some View {
         NavigationStack {
             List {
+                if is_dev_kernel() == 1 && geteuid() != 0 {
+                    Section("Dev kernel internal") {
+                        Text("Note to self: suid bit is not set or euid is not 0. This will cause task_for_pid to fail.")
+                        Text("Current euid: \(geteuid())")
+                    }
+                }
                 if !hasoffsets {
                     Section("Setup") {
                         Text("Kernelcache offsets are missing. Download them in Settings.")
