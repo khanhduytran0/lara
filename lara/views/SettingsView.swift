@@ -24,6 +24,8 @@ struct SettingsView: View {
     @AppStorage("selectedmethod") private var selectedmethod: method = .hybrid
     @AppStorage("rcdockunlimited") private var rcdockunlimited: Bool = false
     @AppStorage("stashkrw") private var stashkrw: Bool = false
+    @AppStorage("selectedFmAppsDisplayMode") private var selectedFmAppsDisplayMode: fmAppsDisplayMode = .appName
+    @AppStorage("fmRecursiveSearch") private var fmRecursiveSearch: Bool = false
     
     var appname: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
@@ -121,11 +123,24 @@ struct SettingsView: View {
                         }
                     
                     Toggle("Show File Manager in Tabs", isOn: $showfmintabs)
-
+                    Toggle("Enable recursive search in File Manager", isOn: $fmRecursiveSearch)
                 } header: {
                     Text("Lara Settings")
                 } footer: {
                     Text("Keep Alive keeps the app running in the background when it is minimized (not closed from app switcher).")
+                }
+
+                Section {
+                    Picker("Display Mode", selection: $selectedFmAppsDisplayMode) {
+                        ForEach(fmAppsDisplayMode.allCases, id: \.self) { mode in
+                            Text(mode.rawValue).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                } header: {
+                    Text("File Manager App Management")
+                } footer: {
+                    Text("Change the way app folders get displayed in the file manager.")
                 }
 
                 #if !DISABLE_REMOTECALL
@@ -612,4 +627,10 @@ enum method: String, CaseIterable {
     case vfs = "VFS"
     case sbx = "SBX"
     case hybrid = "Hybrid"
+}
+
+enum fmAppsDisplayMode: String, CaseIterable {
+    case UUID = "UUID"
+    case bundleID = "Bundle ID"
+    case appName = "App Name"
 }

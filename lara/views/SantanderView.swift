@@ -92,6 +92,7 @@ struct SantanderPath: Hashable {
     let lastPathComponent: String
     let isDirectory: Bool
     let contentType: UTType?
+    let displayName: String
 
     var displayImage: UIImage? {
         if isDirectory { return UIImage(systemName: "folder.fill") }
@@ -103,9 +104,10 @@ struct SantanderPath: Hashable {
         return UIImage(systemName: "doc")
     }
 
-    init(path: String, isDirectory: Bool) {
+    init(path: String, isDirectory: Bool, displayName: String? = nil) {
         self.path = path
         self.lastPathComponent = path == "/" ? "/" : (path as NSString).lastPathComponent
+        self.displayName = displayName ?? self.lastPathComponent
         self.isDirectory = isDirectory
         let ext = (path as NSString).pathExtension
         self.contentType = ext.isEmpty ? nil : UTType(filenameExtension: ext)
@@ -129,6 +131,7 @@ final class SantanderPathListViewController: UITableViewController, UISearchResu
     private var initialEmptyStateMessage: String?
     private var isSearching = false
     private var displayHiddenFiles = true
+    @AppStorage("fmRecursiveSearch") private var fmRecursiveSearch: Bool = false
 
     init(path: SantanderPath, readUsesSBX: Bool, useVFSOverwrite: Bool) {
         self.readUsesSBX = readUsesSBX
@@ -222,7 +225,6 @@ final class SantanderPathListViewController: UITableViewController, UISearchResu
             ) { [weak self] _ in
                 self?.confirmDelete(item)
             }
-            
             return UIMenu(children: [
                 copyAction,
                 infoAction,
@@ -255,17 +257,31 @@ final class SantanderPathListViewController: UITableViewController, UISearchResu
         if !query.isEmpty {
             isSearching = true
 
-            DispatchQueue.global(qos: .userInitiated).async {
-                let results = self.recursiveSearchSBX(
-                    at: self.currentPath.path,
-                    query: query
-                )
+            if fmRecursiveSearch {
+                DispatchQueue.global(qos: .userInitiated).async {
+                    let results = self.recursiveSearchSBX(
+                        at: self.currentPath.path,
+                        query: query
+                    )
 
-                DispatchQueue.main.async {
-                    self.renderedContents = results
-                    self.updateEmptyState(query: query)
-                    self.tableView.reloadData()
+                    DispatchQueue.main.async {
+                        self.renderedContents = results
+                        self.updateEmptyState(query: query)
+                        self.tableView.reloadData()
+                    }
                 }
+            } else {
+                var results: [SantanderPath] = []
+
+                for item in unfilteredContents {
+                    if item.displayName.localizedCaseInsensitiveContains(query) {
+                        results.append(item)
+                    }
+                }
+
+                renderedContents = results
+                updateEmptyState(query: query)
+                tableView.reloadData()
             }
 
             return
@@ -367,11 +383,79 @@ final class SantanderPathListViewController: UITableViewController, UISearchResu
         }
         do {
             let entries = try fm.contentsOfDirectory(atPath: path.path)
+            let modeRaw = UserDefaults.standard.string(forKey: "selectedFmAppsDisplayMode")
+            let mode = fmAppsDisplayMode(rawValue: modeRaw ?? "") ?? .appName
+
+            let dataAppPaths = [
+                "/private/var/mobile/Containers/Data/Application",
+                "/var/mobile/Containers/Data/Application"
+            ]
+            let bundleAppPaths = [
+                "/private/var/containers/Bundle/Application",
+                "/var/containers/Bundle/Application"
+            ]
+            var bundleIDNameCache: [String:String] = [:]
+            if mode == .appName && dataAppPaths.contains(path.path) {
+                let bundlePath = "/private/var/containers/Bundle/Application"
+                let apps = try fm.contentsOfDirectory(atPath: bundlePath)
+                var results: [String:String] = [:]
+                for app in apps {
+                    let appPath = bundlePath + "/" + app
+                    let contents = try fm.contentsOfDirectory(atPath: appPath)
+                    for item in contents {
+                        if item.hasSuffix(".app") {
+                            if let plist = NSDictionary(contentsOf: URL(fileURLWithPath: appPath + "/" + item + "/Info.plist")),
+                                let bundleID = plist["CFBundleIdentifier"] as? String,
+                                let appName = 
+                                    (plist["CFBundleDisplayName"] as? String) ??
+                                    (plist["CFBundleName"] as? String) ??
+                                    (plist["CFBundleExecutable"] as? String) {
+                                results[bundleID] = appName
+                            }
+                            break
+                        }
+                    }
+                }
+                bundleIDNameCache = results
+            }
             let items = entries.map { name in
                 let fullPath = path.path == "/" ? "/" + name : path.path + "/" + name
                 var isDir: ObjCBool = false
+                var displayName = name
                 fm.fileExists(atPath: fullPath, isDirectory: &isDir)
-                return SantanderPath(path: fullPath, isDirectory: isDir.boolValue)
+
+                if (bundleAppPaths + dataAppPaths).contains(path.path) {
+                    if mode == .appName {
+                        if bundleAppPaths.contains(path.path) {
+                            if let contents = try? fm.contentsOfDirectory(atPath: fullPath) {
+                                for item in contents {
+                                    if item.hasSuffix(".app") {
+                                        if let plist = NSDictionary(contentsOf: URL(fileURLWithPath: fullPath + "/" + item + "/Info.plist")),
+                                            let appName = 
+                                                (plist["CFBundleDisplayName"] as? String) ??
+                                                (plist["CFBundleName"] as? String) ??
+                                                (plist["CFBundleExecutable"] as? String) {
+                                            displayName = appName
+                                        }
+                                        break
+                                    }
+                                }
+                            }
+                        } else {
+                            if let plist = NSDictionary(contentsOf: URL(fileURLWithPath: fullPath + "/.com.apple.mobile_container_manager.metadata.plist")),
+                                let bundleID = plist["MCMMetadataIdentifier"] as? String {
+                                displayName = bundleIDNameCache[bundleID] ?? bundleID
+                            }
+                        }
+
+                    } else if mode == .bundleID {
+                        if let plist = NSDictionary(contentsOf: URL(fileURLWithPath: fullPath + "/.com.apple.mobile_container_manager.metadata.plist")), let bundleID = plist["MCMMetadataIdentifier"] as? String {
+                            displayName = bundleID
+                        }
+                    }
+                }
+
+                return SantanderPath(path: fullPath, isDirectory: isDir.boolValue, displayName: displayName)
             }
             if items.isEmpty {
                 return ([], "Directory is empty.")
@@ -433,12 +517,12 @@ final class SantanderPathListViewController: UITableViewController, UISearchResu
         }
         let sortAZ = UIAction(title: "Sort A-Z", image: UIImage(systemName: "textformat")) { [weak self] _ in
             guard let self else { return }
-            self.unfilteredContents.sort { $0.lastPathComponent.localizedCaseInsensitiveCompare($1.lastPathComponent) == .orderedAscending }
+            self.unfilteredContents.sort { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending }
             self.applyFilters(query: self.navigationItem.searchController?.searchBar.text ?? "")
         }
         let sortZA = UIAction(title: "Sort Z-A", image: UIImage(systemName: "textformat")) { [weak self] _ in
             guard let self else { return }
-            self.unfilteredContents.sort { $0.lastPathComponent.localizedCaseInsensitiveCompare($1.lastPathComponent) == .orderedDescending }
+            self.unfilteredContents.sort { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedDescending }
             self.applyFilters(query: self.navigationItem.searchController?.searchBar.text ?? "")
         }
         let toggleHidden = UIAction(title: "Display hidden files", image: UIImage(systemName: "eye"), state: displayHiddenFiles ? .on : .off) { [weak self] _ in
@@ -474,7 +558,7 @@ final class SantanderPathListViewController: UITableViewController, UISearchResu
     }
 
     private func pathCellRow(forURL fsItem: SantanderPath, displayFullPathAsSubtitle useSubtitle: Bool = false) -> UITableViewCell {
-        let pathName = fsItem.lastPathComponent
+        let pathName = fsItem.displayName
         let cell = UITableViewCell(style: useSubtitle ? .subtitle : .default, reuseIdentifier: nil)
         var conf = cell.defaultContentConfiguration()
         conf.text = pathName
