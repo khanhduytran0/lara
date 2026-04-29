@@ -290,6 +290,24 @@ struct RemoteView: View {
             }
             
             Section {
+                Button {
+                    youtube_tweaks(mgr.ytProc)
+                } label: {
+                    Text("Generic Youtube Tweaks")
+                }
+            }
+            
+            Section {
+                Button {
+                    _ = mgr.rccall(name: "exit", args: [0], timeout: 100)
+                } label: {
+                    Text("Respring")
+                }
+            } header: {
+                Text("Tools")
+            }
+            
+            Section {
                 TextField("Process name", text: $customProcessName)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled()

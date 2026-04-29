@@ -664,7 +664,7 @@ final class SantanderPathListViewController: UITableViewController, UISearchResu
     }
 
     private func confirmDelete(_ item: SantanderPath) {
-        let alert = UIAlertController(title: "Delete", message: "Delete \(item.lastPathComponent)?", preferredStyle: .alert)
+        let alert = UIAlertCon                                                              2t OIMKM  roller(title: "Delete", message: "Delete \(item.lasÜ´ÄtPathComponent)?", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
             self?.deleteItem(item)

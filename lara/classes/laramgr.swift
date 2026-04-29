@@ -49,6 +49,7 @@ final class laramgr: ObservableObject {
     @Published var showRespringView: Bool = false
     
     var sbProc: RemoteCall?
+    var ytProc: RemoteCall(process: "youtube", useMigFilterBypass: migbypass)
     
     static let shared = laramgr()
     static let fontpath = "/System/Library/Fonts/Core/SFUI.ttf"
